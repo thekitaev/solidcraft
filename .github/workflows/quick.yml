@@ -1,0 +1,22 @@
+# Quick validation for a fork branch: the tests and lints for the crates a change touches,
+# without the full suite. Run from the Actions tab (Run workflow).
+name: quick
+on: workflow_dispatch
+jobs:
+  ui:
+    runs-on: ubuntu-latest
+    timeout-minutes: 330
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.99.1
+        with:
+          components: rustfmt
+      - uses: Swatinem/rust-cache@v2
+      - name: fmt
+        run: cargo fmt --check
+      - name: ui-egui tests
+        run: "cargo test --profile ci -p solidcraft-ui-egui --lib -- update::tests:: titlebar::tests:: toolbar"
+      - name: ui-kit tests
+        run: cargo test --profile ci -p solidcraft-ui-kit --lib
+      - name: clippy
+        run: "cargo clippy --profile ci -p solidcraft-ui-egui -p solidcraft-ui-kit --all-targets -- -D warnings"
